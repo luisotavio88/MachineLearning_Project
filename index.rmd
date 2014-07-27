@@ -1,0 +1,48 @@
+---
+title: "Pratical Machine Learning Project"
+author: "Luis Otavio"
+date: "Sunday, July 27, 2014"
+output: html_document
+---
+
+
+First of all I read the training and testing data, considering as NA values “NA” and blank cells.
+
+```{r}
+training<-read.csv("pml-training.csv", na.strings = c("NA",""))
+testing<-read.csv("pml-testing.csv", na.strings = c("NA",""))
+```
+
+Now, I removed the variables that had NA results.
+```{r}
+training <- training[, which(as.numeric(colSums(is.na(training)))==0)]
+testing <- testing[, which(as.numeric(colSums(is.na(testing)))==0)]
+```
+
+Finally, I just removed some variables that I don´t believe that will help my model.
+```{r}
+training<- training[,-c(2:7)]
+testing<- testing[,-c(2:7)]
+```
+
+Just splitting the predictor data and the outcome:
+
+```{r}
+predictors<- training[!colnames(training) %in% "classe"]
+outcome<- as.factor(training$classe)
+```
+
+Here is my model, considering the random forest method and a 5-fold Cross Validation:
+
+```{r}
+library(caret)
+model <- train(predictors,outcome,method="rf",trControl = trainControl(method = "cv",number=5))
+```
+
+This method directly estimates the expected extra-sample error, the average generalization error
+when the method  f(X) is applied to an independent test sample from the joint distribution of X and Y. We might hope that cross-validation estimates the conditional error, with the training set held fixed. But cross-validation typically estimates well only the expected prediction error.
+
+```{r}
+model$finalModel
+model
+```
